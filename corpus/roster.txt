@@ -1,0 +1,9 @@
+# Synthetic roster for the test corpus. Every name is invented.
+Alex Sample
+Jordan Example
+Casey Placeholder
+Robin Testcase
+Morgan Demo
+Riley Mockford
+Taylor Fakename
+Sam Dummy

@@ -1,0 +1,122 @@
+
+========================================================================
+1. Original message (synthetic)
+========================================================================
+Alex Sample called from (555) 555-0142 about the leak at 123 Example Street. Send the quote to alex.sample@example.com. Alex is home after 4.
+
+========================================================================
+2. What the screen found
+========================================================================
+  NAME       0:11  Alex Sample
+  PHONE     24:38  (555) 555-0142
+  ADDRESS   57:75  123 Example Street
+  EMAIL     95:118 alex.sample@example.com
+  NAME     120:124 Alex
+
+========================================================================
+3. Mode: block
+========================================================================
+blocked=True  text=None  counts={'NAME': 2, 'PHONE': 1, 'ADDRESS': 1, 'EMAIL': 1}
+
+========================================================================
+4. Mode: redact
+========================================================================
+[NAME] called from [PHONE] about the leak at [ADDRESS]. Send the quote to [EMAIL]. [NAME] is home after 4.
+
+========================================================================
+5. Mode: tokenise
+========================================================================
+[[NAME_1]] called from [[PHONE_1]] about the leak at [[ADDRESS_1]]. Send the quote to [[EMAIL_1]]. [[NAME_2]] is home after 4.
+
+Vault (stays on your side):
+  [[NAME_1]]     -> Alex Sample
+  [[PHONE_1]]    -> (555) 555-0142
+  [[ADDRESS_1]]  -> 123 Example Street
+  [[EMAIL_1]]    -> alex.sample@example.com
+  [[NAME_2]]     -> Alex
+
+========================================================================
+6. Round trip through a mock third party model
+========================================================================
+The model received:
+  [[NAME_1]] called from [[PHONE_1]] about the leak at [[ADDRESS_1]]. Send the quote to [[EMAIL_1]]. [[NAME_2]] is home after 4.
+The model replied:
+  Draft reply: Hello [[NAME_1]], thanks for your message (19 words). We can send someone to [[ADDRESS_1]]. We will confirm the time using [[PHONE_1]].
+The caller gets back, placeholders restored:
+  Draft reply: Hello Alex Sample, thanks for your message (19 words). We can send someone to 123 Example Street. We will confirm the time using (555) 555-0142.
+
+========================================================================
+7. Block mode in front of the same model
+========================================================================
+BlockedError: blocked: 5 finding(s) of kind ADDRESS, EMAIL, NAME, PHONE
+calls that reached the model: 0
+
+========================================================================
+8. Precision and recall on the labelled synthetic corpus
+========================================================================
+Corpus: 110 examples, 177 labelled spans
+
+Exact span match (kind, start and end all equal)
+kind       gold  pred    tp    fp    fn  precision  recall     f1
+EMAIL        35    34    34     0     1      1.000   0.971  0.986
+PHONE        49    48    45     3     4      0.938   0.918  0.928
+ADDRESS      38    36    35     1     3      0.972   0.921  0.946
+NAME         55    57    50     7     5      0.877   0.909  0.893
+ALL         177   175   164    11    13      0.937   0.927  0.932
+
+Relaxed match (same kind, any overlap)
+kind       precision  recall
+EMAIL          1.000   0.971
+PHONE          0.958   0.939
+ADDRESS        0.972   0.921
+NAME           0.930   0.964
+ALL            0.960   0.949
+
+========================================================================
+9. Same corpus, full names only (no single first or last names)
+========================================================================
+Corpus: 110 examples, 177 labelled spans
+
+Exact span match (kind, start and end all equal)
+kind       gold  pred    tp    fp    fn  precision  recall     f1
+EMAIL        35    34    34     0     1      1.000   0.971  0.986
+PHONE        49    48    45     3     4      0.938   0.918  0.928
+ADDRESS      38    36    35     1     3      0.972   0.921  0.946
+NAME         55    43    43     0    12      1.000   0.782  0.878
+ALL         177   161   157     4    20      0.975   0.887  0.929
+
+Relaxed match (same kind, any overlap)
+kind       precision  recall
+EMAIL          1.000   0.971
+PHONE          0.958   0.939
+ADDRESS        0.972   0.921
+NAME           1.000   0.782
+ALL            0.981   0.893
+
+========================================================================
+10. Every miss and false positive, default settings
+========================================================================
+  hard-001  missed          EMAIL    'alex dot sample at example dot com'
+  hard-002  missed          PHONE    '555 555 01 42'
+  hard-003  missed          PHONE    '555 0142'
+  hard-004  missed          PHONE    'five five five, zero one four two'
+  hard-005  missed          ADDRESS  '12 example street'
+  hard-006  missed          ADDRESS  'Mockingbird Road, number 9'
+  hard-007  missed          ADDRESS  'Unit 4, Fixture Court'
+  hard-008  missed          NAME     'alex'
+  hard-009  missed          NAME     'JORDAN'
+  hard-010  false_positive  NAME     'Sample'
+  hard-010  missed          NAME     'A. Sample'
+  hard-011  false_positive  NAME     'Example'
+  hard-011  missed          NAME     'Jordon Example'
+  hard-012  false_positive  NAME     'Casey'
+  hard-012  missed          NAME     'Casey P.'
+  hard-013  false_positive  PHONE    '555-555-0117'
+  hard-013  missed          PHONE    '555-555-0117 extension 22'
+  hard-014  false_positive  NAME     'Sample'
+  hard-015  false_positive  NAME     'Demo'
+  hard-016  false_positive  NAME     'Robin'
+  hard-017  false_positive  PHONE    '5550001234'
+  hard-018  false_positive  PHONE    '400-2210'
+  hard-019  false_positive  ADDRESS  '2 Standard Court'
+  hard-020  false_positive  NAME     'Dummy'
