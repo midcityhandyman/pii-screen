@@ -7,7 +7,7 @@ name = "pii-screen"
 version = "0.1.0"
 description = "Screen text for phone numbers, emails, street addresses and roster names before it leaves for a third party model."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dependencies = []
 
 [project.scripts]

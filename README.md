@@ -62,7 +62,7 @@ flowchart LR
 
 ## Run it
 
-Needs Python 3.9 or newer. Nothing to install.
+Needs Python 3.10 or newer. Nothing to install.
 
 ```bash
 echo "Call Alex Sample on 555-555-0142" | python -m pii_screen screen --roster corpus/roster.txt --vault vault.json
@@ -87,7 +87,7 @@ python -m pii_screen eval --full-names-only                   # stricter name ma
 python -m unittest discover -s tests -v
 ```
 
-41 tests cover each detector, the three modes, vault round trips, the guarded model call, the scoring maths, the CLI, and a check that the shipped corpus matches its builder. CI (`.github/workflows/ci.yml`) runs the same on Python 3.9 and 3.12, then runs the eval and the demo.
+41 tests cover each detector, the three modes, vault round trips, the guarded model call, the scoring maths, the CLI, and a check that the shipped corpus matches its builder. CI (`.github/workflows/ci.yml`) runs the same on Python 3.10 and 3.12, then runs the eval and the demo.
 
 ## Demo
 
