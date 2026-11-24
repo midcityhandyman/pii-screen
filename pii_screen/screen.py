@@ -31,9 +31,11 @@ class BlockedError(Exception):
 class Vault:
     """Maps placeholders such as [[NAME_1]] back to the original text.
 
-    The same original always gets the same placeholder, so a model can still
-    tell that two mentions are the same person. The vault holds the real
-    values: keep it on your side and never send it with the screened text.
+    The same original string always gets the same placeholder, so a model can
+    still tell that two identical mentions are the same thing. Different
+    spellings of one value ("Alex Sample" and "Alex") get different ones. The
+    vault holds the real values: keep it on your side and never send it with
+    the screened text.
     """
 
     def __init__(self) -> None:
@@ -65,7 +67,11 @@ class Vault:
     @classmethod
     def from_dict(cls, data: Dict[str, str]) -> "Vault":
         vault = cls()
+        if not isinstance(data, dict):
+            raise ValueError("vault must be a JSON object of placeholder to value")
         for token, value in data.items():
+            if not TOKEN_RE.fullmatch(token) or not isinstance(value, str):
+                raise ValueError(f"not a valid vault entry: {token!r}")
             kind, _, num = token.strip("[]").rpartition("_")
             vault.tokens[token] = value
             vault._by_value[(kind, value)] = token

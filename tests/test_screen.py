@@ -84,6 +84,16 @@ class VaultTests(unittest.TestCase):
     def test_restore_leaves_unknown_placeholders(self):
         self.assertEqual(Vault().restore("hello [[NAME_9]]"), "hello [[NAME_9]]")
 
+    def test_from_dict_rejects_malformed_entries(self):
+        for bad in [{"junk": "x"}, {"[[NAME_1]]": 5}, ["[[NAME_1]]"]]:
+            with self.subTest(bad=bad):
+                with self.assertRaises(ValueError):
+                    Vault.from_dict(bad)
+
+    def test_overlapping_name_and_email_leave_no_tail(self):
+        out = Screener(ROSTER).screen("Contact: Sample, alex@example.com", "redact").text
+        self.assertEqual(out, "Contact: [EMAIL]")
+
 
 class GuardedCallTests(unittest.TestCase):
     def test_model_never_sees_originals_and_reply_is_restored(self):

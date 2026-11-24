@@ -89,6 +89,16 @@ class OverlapTests(unittest.TestCase):
         found = detect("go to 42 Sample Ave please", ROSTER)
         self.assertEqual([(f.kind, f.text) for f in found], [("ADDRESS", "42 Sample Ave")])
 
+    def test_partial_overlap_is_merged_not_cut(self):
+        # A "Last, First" name match that runs into an email used to win and
+        # drop the email, leaving "@example.com" in the output.
+        for text, span in [("Contact: Sample, alex@example.com today", "Sample, alex@example.com"),
+                           ("Alex sample@example.com", "Alex sample@example.com")]:
+            with self.subTest(text=text):
+                found = detect(text, ROSTER)
+                self.assertEqual([(f.kind, f.text) for f in found], [("EMAIL", span)])
+                self.assertEqual(text[found[0].start:found[0].end], span)
+
     def test_findings_sorted_and_disjoint(self):
         found = detect("Alex Sample, 555-555-0142, alex@example.com, 123 Example Street", ROSTER)
         self.assertEqual([f.kind for f in found], ["NAME", "PHONE", "EMAIL", "ADDRESS"])

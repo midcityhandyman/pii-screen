@@ -125,6 +125,16 @@ class CliTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertIn("error", err)
 
+    def test_bad_vault_file_is_an_error_not_a_traceback(self):
+        with tempfile.TemporaryDirectory() as d:
+            for content in ["not json", '{"junk": "x"}']:
+                vault = os.path.join(d, "vault.json")
+                Path(vault).write_text(content, encoding="utf-8")
+                with self.subTest(content=content):
+                    code, _, err = run_cli(["restore", "--vault", vault], stdin="hi [[NAME_1]]")
+                    self.assertEqual(code, 1)
+                    self.assertIn("error", err)
+
 
 if __name__ == "__main__":
     unittest.main()

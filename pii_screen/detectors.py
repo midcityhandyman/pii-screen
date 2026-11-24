@@ -137,14 +137,22 @@ class Roster:
 
 
 def resolve_overlaps(findings: Sequence[Finding]) -> List[Finding]:
-    """Keep the earliest finding, preferring the longer one on a tie, and drop
-    anything that overlaps a finding already kept."""
+    """Return findings sorted and disjoint, with no detected character lost.
+
+    The earliest finding is kept, the longer one on a tie. A later finding
+    that sits inside a kept one is dropped. One that overlaps it and runs past
+    its end is merged in, so its tail is still covered: the merged span takes
+    the kind of the longer of the two. Without the merge, "Sample,
+    alex@example.com" would lose only the name and leave "@example.com".
+    """
     kept: List[Finding] = []
-    last_end = -1
     for f in sorted(findings, key=lambda f: (f.start, -(f.end - f.start), KINDS.index(f.kind))):
-        if f.start >= last_end:
+        if not kept or f.start >= kept[-1].end:
             kept.append(f)
-            last_end = f.end
+        elif f.end > kept[-1].end:
+            prev = kept[-1]
+            longer = prev if prev.end - prev.start >= f.end - f.start else f
+            kept[-1] = Finding(prev.start, f.end, longer.kind, prev.text + f.text[prev.end - f.start:])
     return kept
 
 

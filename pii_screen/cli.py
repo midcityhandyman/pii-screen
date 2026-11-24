@@ -108,6 +108,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = build_parser().parse_args(argv)
     try:
         return args.func(args)
-    except OSError as exc:
+    except (OSError, ValueError) as exc:
+        # ValueError covers a vault or corpus file that is not valid JSON.
         print(f"error: {exc}", file=sys.stderr)
         return 1
